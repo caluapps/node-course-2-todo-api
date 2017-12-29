@@ -54,7 +54,7 @@ let app = express();
 /*  */
 app.use(bodyParser.json());
 
-// CRUD
+// Create todo
 app.post('/todos', (req, res) => {
   console.log(req.body);
   let todo = new Todo({
@@ -66,6 +66,15 @@ app.post('/todos', (req, res) => {
   }, (e) => {
     res.status(400).send(e);
   });
+});
+
+// Get all
+app.get('/todos', (req, res) => {
+  Todo.find().then((todos) => {
+    res.send({todos})
+  }, (e) => {
+    res.status(400).send(e);
+  })
 });
 
 app.listen(3000, () => {
