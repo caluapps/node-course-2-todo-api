@@ -19,7 +19,7 @@ Todo.find({
 });*/
 
 /* Ähnlich wie .find() mit dem einen Unterschied, dass bei mehereren Ergebnisse
-    das zurückgegeben wird, welches am ehesten den Kriterien passt *//*
+    das zurückgegeben wird, welches am ehesten den Kriterien entsprechen *//*
 Todo.findOne({
   _id: id
 }).then((todo) => {

@@ -1,6 +1,7 @@
 // library import
 const express = require('express');
 const bodyParser = require('body-parser');
+const {ObjectID} = require('mongodb');
 
 // local import
 const {mongoose} = require('./db/mongoose.js');
@@ -75,6 +76,39 @@ app.get('/todos', (req, res) => {
   }, (e) => {
     res.status(400).send(e);
   })
+});
+
+// Challenge: GET /todos/1234324
+app.get('/todos/:id', (req, res) => {
+  let id = req.params.id;
+  // res.send(req.params);
+
+/* Challenge:
+    validate id
+      - 404 - send back empty body
+    findById - take id and query the collection looking for a matching document
+      - success
+        - if todo - send it back
+        - if no todo - send back 404, with empty body
+      - error
+        - 400 - send empty body back, because could contain privat information */
+
+  /* einfache Methode die Gültigkeit einer Id zu überprüfen */
+  if (!ObjectID.isValid(id)) {
+    return res.status(404).send();
+  }
+
+  /* Suchen nach todo ID */
+  Todo.findById(id).then((todo) => {
+    if (!todo) {
+      return res.status(404).send();
+    }
+    res.status(200).send({todo});
+
+  }).catch((e) => {
+    res.status(400).send();
+  });
+
 });
 
 app.listen(3000, () => {
