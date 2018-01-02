@@ -94,17 +94,22 @@ app.get('/todos/:id', (req, res) => {
         - 400 - send empty body back, because could contain privat information */
 
   /* einfache Methode die Gültigkeit einer Id zu überprüfen */
+  /* Wenn id nicht gültig */
   if (!ObjectID.isValid(id)) {
     return res.status(404).send();
   }
 
-  /* Suchen nach todo ID */
+  /* Suchen nach todo ID, wenn id gültig */
   Todo.findById(id).then((todo) => {
+    /* Wenn id gültig aber im doc nicht vorhanden */
     if (!todo) {
       return res.status(404).send();
     }
+
+    /* Wenn id gültig und vorhanden */
     res.status(200).send({todo});
 
+  /* z.B. Wenn Datenbank nicht erreichbar */
   }).catch((e) => {
     res.status(400).send();
   });

@@ -1,13 +1,16 @@
 const expect = require('expect');
 const request = require('supertest');
+const {ObjectID} = require('mongodb');
 
 const {app} = require('./../server');
 const {Todo} = require('./../models/todo');
 
 /* (76) Dummy daten für weitere Tests für GET /todos */
 const todos = [{
+  _id: new ObjectID(),
   text: 'First test todo'
 }, {
+  _id: new ObjectID(),
   text: 'Second test todo'
 }];
 
@@ -82,4 +85,39 @@ describe('POST /todos', () => {
     });
   });
 
+  /*  */
+  describe('GET /todos/:id', () => {
+    it('should return todo doc', (done) => {
+      request(app)
+        .get(`/todos/${todos[0]._id.toHexString()}`)
+        .expect(200)
+        .expect((res) => {
+          expect(res.body.todo.text).toBe(todos[0].text);
+        })
+        .end(done);
+    });
+
+    /* Challenge: should return 404 if todo not found
+                  make new ObjectID, which won't be in the doc
+                  make sure to get 404 back */
+    it('should return 404 if todo not found', (done) => {
+      let badId = new ObjectID().toHexString();
+
+      request(app)
+        .get(`/todos/${badId}`)
+        .expect(404)
+        .end(done);
+    })
+
+    /* Challenge: invalid id
+                  /todos/123 */
+    it('should return 404 for none-object ids', (done) => {
+      let invalidId = 123;
+
+      request(app)
+        .get(`/todos/${invalidId}`)
+        .expect(404)
+        .end(done);
+    })
+  });
 });
