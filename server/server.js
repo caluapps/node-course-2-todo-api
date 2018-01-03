@@ -119,6 +119,47 @@ app.get('/todos/:id', (req, res) => {
 
 });
 
+// Delete Route
+app.delete('/todos/:id', (req, res) => {
+  /* Challenge:
+  get the id
+  validate the id
+    if not valid return 404
+  remove todo by id
+    success
+      if no doc send 404
+      if doc, send doc back with 200
+    error
+      400 with empty body */
+
+// get the id
+  let toDeleteNoteId = req.params.id;
+
+// validate the id
+  // if not valid return 404
+  if (!ObjectID.isValid(toDeleteNoteId)) {
+    return res.status(404).send();
+  }
+
+// remove todo by id
+    Todo.findByIdAndRemove(toDeleteNoteId).then((todo) => {
+
+// success
+      // if no doc send 404
+      if (!todo) {
+        return res.status(404).send();
+      }
+
+      // if doc, send doc back with 200
+      res.status(200).send({todo});
+
+    // error
+      // 400 with empty body
+    }).catch((e) => {
+      res.status(400).send();
+    });
+});
+
 /* heroku-ready */
 app.listen(port, () => {
   console.log(`Started up on port ${port}`);
