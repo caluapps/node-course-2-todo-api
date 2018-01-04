@@ -1,3 +1,5 @@
+const _ = require('lodash');
+
 // library import
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -28,8 +30,8 @@ var challengeTodo = new Todo({
   text: '12'
 });*/
 
-/*
-challengeTodo.save().then((doc) => {
+/* challenge:
+Todo.save().then((doc) => {
   console.log(JSON.stringify(doc, undefined, 2));
 }, (e) => {
   console.log('Unable to save todo');
@@ -158,6 +160,34 @@ app.delete('/todos/:id', (req, res) => {
     }).catch((e) => {
       res.status(400).send();
     });
+});
+
+app.patch('/todos/:id', (req, res) => {
+  var id = req.params.id;
+  var body = _.pick(req.body, ['text', 'completed']);
+
+  if (!ObjectID.isValid(id)) {
+    return res.status(404).send();
+  }
+
+  // isBoolean prüft ob body.completed ein Boolean ist UND true od false
+  if (_.isBoolean(body.completed) && body.completed) {
+    body.completedAt = new Date().getTime();
+
+  } else {
+    body.completed = false;
+    body.completedAt = null;
+  }
+
+  Todo.findByIdAndUpdate(id, {$set: body}, {new: true}).then((todo) => {
+    if (!todo) {
+      res.status(404).send();
+    }
+
+    res.status(200).send({todo});
+  }).catch((e) => {
+    res.status(400).send();
+  })
 });
 
 /* heroku-ready */
