@@ -39,19 +39,19 @@ describe('POST /todos', () => {
           return done(err);
         }
 
-        /* überprüft ob nach dem erstellen der Datensatz auch in der
+        /* überprüft, ob nach dem erstellen der Datensatz auch in der
             Datenbank vorhanden ist
           UPDATE(76): von Todo.find() auf Todo.find({text}) */
         Todo.find({text}).then((todos) => {
           expect(todos.length).toBe(1);
           expect(todos[0].text).toBe(text);
           done();
-        }).catch((e) => done(e))
+        }).catch((e) => done(e));
       });
   });
 
-  /* Challenge: bestätigt, dass kein Datensatz erstellt worden wenn
-      fehlerhafte Daten gesendet worden sind */
+  /* Challenge: bestätigt, dass kein Datensatz erstellt worden sind,
+      wenn fehlerhafte Daten gesendet worden sind */
   it('it should not create todo with invalid body data', (done) => {
 
     request(app)
@@ -68,56 +68,97 @@ describe('POST /todos', () => {
         Todo.find().then((todos) => {
           expect(todos.length).toBe(2);
           done();
-        }).catch((e) => done(e))
+        }).catch((e) => done(e));
+      });
+  });
+});
+
+/* Überprüft die Konstanten bzw alle Einträge in der Datenbank*/
+describe('GET /todos', () => {
+  it('should get all todos', (done) => {
+    request(app)
+      .get('/todos')
+      .expect(200)
+      .expect((res) => {
+        expect(res.body.todos.length).toBe(2);
+      })
+      .end(done);
+  });
+});
+
+/* Überprüft, ob die speziellen Todos auch noch da sind */
+describe('GET /todos/:id', () => {
+  it('should return todo doc', (done) => {
+    request(app)
+      .get(`/todos/${todos[0]._id.toHexString()}`)
+      .expect(200)
+      .expect((res) => {
+        expect(res.body.todo.text).toBe(todos[0].text);
+      })
+      .end(done);
+  });
+
+  /* Challenge: should return 404 if todo not found
+                make new ObjectID, which won't be in the doc
+                make sure to get 404 back */
+  it('should return 404 if todo not found', (done) => {
+    let badId = new ObjectID().toHexString();
+
+    request(app)
+      .get(`/todos/${badId}`)
+      .expect(404)
+      .end(done);
+  });
+
+  /* Challenge: invalid id
+                /todos/123 */
+  it('should return 404 for none-object ids', (done) => {
+    let invalidId = 123;
+
+    request(app)
+      .get(`/todos/${invalidId}`)
+      .expect(404)
+      .end(done);
+  });
+});
+
+/* Testet ob gelöscht wurde */
+describe('DELETE /todos/:id', () => {
+  it('should remove a todo', (done) => {
+    var hexId = todos[1]._id.toHexString();
+
+    request(app)
+      .delete(`/todos/${hexId}`)
+      .expect(200)
+      .expect((res) => {
+        expect(res.body.todo._id).toBe(hexId);
+      })
+      .end((err, res) => {
+        if (err) {
+          return done(err);
+        }
+
+        // query database using findById, toNotExist
+          // expect(null).toNotExist();
+        Todo.findById(hexId).then((todo) => {
+          /* doesn't work
+          expect(todo).toNotExist(); */
+          expect(todo).toBeNull();
+          done();
+        }).catch((e) => done(e));
       });
   });
 
-  /* Überprüft die Konstanten bzw alle Einträge in der Datenbank*/
-  describe('GET /todos', () => {
-    it('should get all todos', (done) => {
-      request(app)
-        .get('/todos')
-        .expect(200)
-        .expect((res) => {
-          expect(res.body.todos.length).toBe(2);
-        })
-        .end(done);
-    });
+/*
+  it('should return 404 if todo not found', (done) => {
+
   });
 
-  /*  */
-  describe('GET /todos/:id', () => {
-    it('should return todo doc', (done) => {
-      request(app)
-        .get(`/todos/${todos[0]._id.toHexString()}`)
-        .expect(200)
-        .expect((res) => {
-          expect(res.body.todo.text).toBe(todos[0].text);
-        })
-        .end(done);
-    });
+  it('should return 404 if object id is valid', () => {
 
-    /* Challenge: should return 404 if todo not found
-                  make new ObjectID, which won't be in the doc
-                  make sure to get 404 back */
-    it('should return 404 if todo not found', (done) => {
-      let badId = new ObjectID().toHexString();
+  }); */
 
-      request(app)
-        .get(`/todos/${badId}`)
-        .expect(404)
-        .end(done);
-    })
 
-    /* Challenge: invalid id
-                  /todos/123 */
-    it('should return 404 for none-object ids', (done) => {
-      let invalidId = 123;
 
-      request(app)
-        .get(`/todos/${invalidId}`)
-        .expect(404)
-        .end(done);
-    })
-  });
+
 });
