@@ -162,6 +162,7 @@ app.delete('/todos/:id', (req, res) => {
     });
 });
 
+/* to Patch existing todo */
 app.patch('/todos/:id', (req, res) => {
   var id = req.params.id;
   var body = _.pick(req.body, ['text', 'completed']);

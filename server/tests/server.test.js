@@ -11,7 +11,9 @@ const todos = [{
   text: 'First test todo'
 }, {
   _id: new ObjectID(),
-  text: 'Second test todo'
+  text: 'Second test todo',
+  completed: true,
+  completedAt: 333
 }];
 
 /* Leert die Datenbank vor dem eigentlich Test und jedem it(..)*/
@@ -138,10 +140,11 @@ describe('DELETE /todos/:id', () => {
           return done(err);
         }
 
-        // query database using findById, toNotExist
-          // expect(null).toNotExist();
+        /* Challenge: query database using findById,
+                        toNotExist
+                        expect(null).toNotExist(); */
         Todo.findById(hexId).then((todo) => {
-          /* doesn't work
+          /* doesn't work anymore
           expect(todo).toNotExist(); */
           expect(todo).toBeNull();
           done();
@@ -149,16 +152,115 @@ describe('DELETE /todos/:id', () => {
       });
   });
 
-/*
   it('should return 404 if todo not found', (done) => {
+    var hexId = new ObjectID().toHexString();
+
+    request(app)
+      .delete(`/todos/${hexId}`)
+      .expect(404)
+      .end(done);
+  });
+
+  it('should return 404 if object id is valid', (done) => {
+    let invalidToDeleteId = 123;
+
+    request(app)
+      .delete(`/todos/${invalidToDeleteId}`)
+      .expect(404)
+      .end(done);
+  });
+});
+
+/* Challenge: Testing Patch */
+describe('PATCH /todos/:id', () => {
+  it('should update the todo', (done) => {
+    /*  grab id of first item
+        update text to any, set completd to true
+        200
+        costum assertion:
+          text is changed,
+          completed true,
+          completedAt is a number - toBaA */
+
+    var hexId = todos[0]._id.toHexString();
+    var toPatchFirstText = 'Update text to any';
+    var toToggleFirstCompleted = true;
+
+    request(app)
+      .patch(`/todos/${hexId}`)
+      .send({
+        text: toPatchFirstText,
+        completed: toToggleFirstCompleted
+      })
+      .expect(200)
+      .expect((res) => {
+        expect(res.body.todo.text).toBe(toPatchFirstText);
+        expect(res.body.todo.completed).toBe(toToggleFirstCompleted);
+        expect(typeof(res.body.todo.completedAt)).toEqual('number');
+      })
+//      .end(done);
+
+/* Optional: Query in Datenbank */
+
+      .end((err, res) => {
+        if (err) {
+          return done(err);
+        }
+
+        Todo.findById(hexId).then((todo) => {
+          expect(todo.text).toBe(toPatchFirstText);
+          expect(todo.completed).toBe(toToggleFirstCompleted);
+          expect(typeof(todo.completedAt)).toEqual('number');
+          done();
+
+        }).catch((e) => done(e));
+      });
 
   });
 
-  it('should return 404 if object id is valid', () => {
+  it('should clear completedAt when todo is not completed', (done) => {
 
-  }); */
+    /*  grab id of secend todo item
+        update text to something different, set completed to false
+        200
+          text is changed,
+          completed false,
+          completedAt is null - toNotExist() or toBeNull() */
 
+    var hexId = todos[1]._id.toHexString();
+    var toPatchSecondText = 'Update to something different';
+    var toToggleSecondCompleted = false;
 
+    request(app)
+      .patch(`/todos/${hexId}`)
+      .send({
+        text: toPatchSecondText,
+        completed: toToggleSecondCompleted,
+        completedAt: null
+      })
+      .expect(200)
+      .expect((res) => {
+        expect(res.body.todo.text).toBe(toPatchSecondText);
+        expect(res.body.todo.completed).toBe(false);
+        expect(res.body.todo.completedAt).toBeNull();
+      })
+//      .end(done);
 
+/* Optional: Query in Datenbank */
 
+      .end((err, res) => {
+        if (err) {
+          return done(err);
+        }
+
+        Todo.findById(hexId).then((todo) => {
+          expect(todo.text).toBe(toPatchSecondText);
+          expect(todo.completed).toBe(toToggleSecondCompleted);
+          expect(todo.completedAt).toBeNull();
+          done();
+
+        }).catch((e) => done(e));
+      });
+
+  });
 });
