@@ -1,3 +1,5 @@
+require('./config/config');
+
 const _ = require('lodash');
 
 // library import
@@ -54,8 +56,10 @@ const {User} = require('./models/user');
 
 let app = express();
 
-/* heroku-ready */
-const port = process.env.PORT || 3000;
+/* heroku-ready Alt
+const port = process.env.PORT || 3000; */
+/* heroku-ready Lektion 86 */
+const port = process.env.PORT;
 
 /*  */
 app.use(bodyParser.json());
